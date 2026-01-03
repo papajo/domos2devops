@@ -18,7 +18,8 @@ export interface MappingResult {
   roomName: string;
   mappings: TaskMapping[];
   story: string;
-  starResponse: StarResponse; // New: STAR formatted interview response
+  starResponse: StarResponse;
+  linkedInPost: string; // New: Blended LinkedIn-optimized post
 }
 
 export type RoomType = 'Kitchen' | 'Bathroom' | 'Living Room' | 'Bedroom' | 'Garage' | 'Attic' | 'Garden' | 'Home Office';

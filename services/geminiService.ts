@@ -10,10 +10,12 @@ export const generateMapping = async (input: { room?: string; customIdea?: strin
   let prompt = `Act as a senior DevOps engineer and an expert home manager. 
   Map the household chores and activities associated with the input provided to equivalent IT engineering tasks (Type B) in a corporate tech environment. 
   
-  Additionally, provide two narrative outputs:
+  Additionally, provide three narrative outputs:
   1. 'story': A short, humorous narrative mashing up these tasks into a single 'day in the life' of a 'Full-Stack Homeowner'.
   2. 'starResponse': A professional technical interview response using the STAR (Situation, Task, Action, Result) format. 
-     Pick a major "incident" from this household area (e.g., a leaking sink or a messy kitchen) and describe how you solved it as if it were a critical production outage. Use professional metrics and senior-level engineer vocabulary.`;
+     Pick a major "incident" from this household area and describe how you solved it as if it were a critical production outage.
+  3. 'linkedInPost': A high-engagement LinkedIn post that blends the 'story' and 'starResponse'. 
+     It should start with a catchy hook about how home maintenance is just like DevOps, reflect on professional growth, use bullet points for the "mapping", and include relevant hashtags (e.g., #DevOps #HomeOps #LifeEngineering). Use an encouraging, "thought leader" tone.`;
 
   if (input.room) {
     prompt += `\nTarget Area: ${input.room}`;
@@ -67,9 +69,10 @@ export const generateMapping = async (input: { room?: string; customIdea?: strin
               result: { type: Type.STRING }
             },
             required: ["situation", "task", "action", "result"]
-          }
+          },
+          linkedInPost: { type: Type.STRING, description: "A catchy, blended LinkedIn post." }
         },
-        required: ["roomName", "mappings", "story", "starResponse"]
+        required: ["roomName", "mappings", "story", "starResponse", "linkedInPost"]
       }
     }
   });

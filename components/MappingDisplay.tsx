@@ -9,7 +9,8 @@ interface MappingDisplayProps {
 }
 
 const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCached }) => {
-  const [viewMode, setViewMode] = useState<'narrative' | 'star'>('narrative');
+  const [viewMode, setViewMode] = useState<'narrative' | 'star' | 'linkedin'>('narrative');
+  const [copied, setCopied] = useState(false);
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
@@ -31,6 +32,12 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCach
     }
   };
 
+  const handleCopyPost = () => {
+    navigator.clipboard.writeText(data.linkedInPost);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const downloadSessionData = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -48,22 +55,31 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCach
       
       {/* Dynamic Content Section */}
       <div className="relative group">
-        <div className="flex justify-between items-center mb-4 px-2">
-          <div className="flex gap-2">
+        <div className="flex justify-between items-center mb-4 px-2 overflow-x-auto no-scrollbar">
+          <div className="flex gap-2 flex-nowrap">
             <button 
               onClick={() => setViewMode('narrative')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${viewMode === 'narrative' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'narrative' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
             >
               Domestic Story
             </button>
             <button 
               onClick={() => setViewMode('star')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${viewMode === 'star' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'bg-white/5 text-amber-500/60 hover:bg-amber-500/10'}`}
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all whitespace-nowrap ${viewMode === 'star' ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'bg-white/5 text-amber-500/60 hover:bg-amber-500/10'}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
               STAR Interview Mode
+            </button>
+            <button 
+              onClick={() => setViewMode('linkedin')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all whitespace-nowrap ${viewMode === 'linkedin' ? 'bg-[#0077b5] text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-blue-400/60 hover:bg-blue-400/10'}`}
+            >
+              <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+              </svg>
+              LinkedIn Post
             </button>
           </div>
         </div>
@@ -83,7 +99,7 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCach
               "{data.story}"
             </p>
           </div>
-        ) : (
+        ) : viewMode === 'star' ? (
           <div className="glass rounded-2xl p-6 border-amber-500/20 relative overflow-hidden transition-all duration-500 bg-gradient-to-br from-amber-500/5 to-transparent">
             <h3 className="text-amber-500 font-bold uppercase tracking-widest text-xs mb-6 flex items-center gap-2">
               <span className="w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
@@ -111,6 +127,39 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCach
               <span className="text-[10px] mono text-slate-500 uppercase">Interview Rank: Senior Engineer L5+</span>
             </div>
           </div>
+        ) : (
+          <div className="glass rounded-2xl p-6 border-blue-500/20 relative overflow-hidden transition-all duration-500 bg-[#0077b5]/5">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-blue-400 font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+                <span className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(0,119,181,0.5)]"></span>
+                LinkedIn Blended Output
+              </h3>
+              <button 
+                onClick={handleCopyPost}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${copied ? 'bg-green-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20'}`}
+              >
+                {copied ? (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    Post Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                      <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                    </svg>
+                    Copy for LinkedIn
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="bg-black/20 rounded-xl p-5 border border-white/5 font-serif text-slate-100 leading-relaxed whitespace-pre-wrap select-all">
+              {data.linkedInPost}
+            </div>
+          </div>
         )}
       </div>
 
@@ -122,7 +171,7 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCach
           </h2>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-              Schema: Domos-Mapping-v3-STAR
+              Schema: Domos-Mapping-v4-LinkedIn
             </span>
             {isCached && (
               <span className="text-[9px] px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded uppercase font-bold tracking-tighter">
