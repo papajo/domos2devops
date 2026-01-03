@@ -10,14 +10,17 @@ export const generateMapping = async (input: { room?: string; customIdea?: strin
   let prompt = `Act as a senior DevOps engineer and an expert home manager. 
   Map the household chores and activities associated with the input provided to equivalent IT engineering tasks (Type B) in a corporate tech environment. 
   
-  Additionally, generate a 'story' field which is a short (2-3 paragraph) humorous narrative that mashes up these household and IT tasks into a single 'day in the life' of a 'Full-Stack Homeowner'. Use tech jargon creatively.`;
+  Additionally, provide two narrative outputs:
+  1. 'story': A short, humorous narrative mashing up these tasks into a single 'day in the life' of a 'Full-Stack Homeowner'.
+  2. 'starResponse': A professional technical interview response using the STAR (Situation, Task, Action, Result) format. 
+     Pick a major "incident" from this household area (e.g., a leaking sink or a messy kitchen) and describe how you solved it as if it were a critical production outage. Use professional metrics and senior-level engineer vocabulary.`;
 
   if (input.room) {
     prompt += `\nTarget Area: ${input.room}`;
   } else if (input.customIdea) {
     prompt += `\nCustom User Idea: ${input.customIdea}`;
   } else if (input.imageData) {
-    prompt += `\nAnalyze the provided image. Identify the room or scene, its state (e.g., messy, under construction, organized), and map the visible maintenance needs to IT tasks.`;
+    prompt += `\nAnalyze the provided image. Identify the room/scene and map the visible maintenance needs to professional IT operations.`;
     parts.push({
       inlineData: input.imageData
     });
@@ -54,9 +57,19 @@ export const generateMapping = async (input: { room?: string; customIdea?: strin
               required: ["householdTask", "itTask", "category", "rationale", "priority"]
             }
           },
-          story: { type: Type.STRING, description: "A humorous narrative mashing household and IT tasks." }
+          story: { type: Type.STRING },
+          starResponse: {
+            type: Type.OBJECT,
+            properties: {
+              situation: { type: Type.STRING },
+              task: { type: Type.STRING },
+              action: { type: Type.STRING },
+              result: { type: Type.STRING }
+            },
+            required: ["situation", "task", "action", "result"]
+          }
         },
-        required: ["roomName", "mappings", "story"]
+        required: ["roomName", "mappings", "story", "starResponse"]
       }
     }
   });

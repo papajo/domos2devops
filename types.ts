@@ -7,10 +7,18 @@ export interface TaskMapping {
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
 }
 
+export interface StarResponse {
+  situation: string;
+  task: string;
+  action: string;
+  result: string;
+}
+
 export interface MappingResult {
   roomName: string;
   mappings: TaskMapping[];
-  story: string; // New: A narrative mashing up the tasks
+  story: string;
+  starResponse: StarResponse; // New: STAR formatted interview response
 }
 
 export type RoomType = 'Kitchen' | 'Bathroom' | 'Living Room' | 'Bedroom' | 'Garage' | 'Attic' | 'Garden' | 'Home Office';
