@@ -4,10 +4,30 @@ import { MappingResult } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
-export const generateRoomMapping = async (room: string): Promise<MappingResult> => {
+export const generateMapping = async (input: { room?: string; customIdea?: string; imageData?: { data: string; mimeType: string } }): Promise<MappingResult> => {
+  const parts: any[] = [];
+  
+  let prompt = `Act as a senior DevOps engineer and an expert home manager. 
+  Map the household chores and activities associated with the input provided to equivalent IT engineering tasks (Type B) in a corporate tech environment. 
+  
+  Additionally, generate a 'story' field which is a short (2-3 paragraph) humorous narrative that mashes up these household and IT tasks into a single 'day in the life' of a 'Full-Stack Homeowner'. Use tech jargon creatively.`;
+
+  if (input.room) {
+    prompt += `\nTarget Area: ${input.room}`;
+  } else if (input.customIdea) {
+    prompt += `\nCustom User Idea: ${input.customIdea}`;
+  } else if (input.imageData) {
+    prompt += `\nAnalyze the provided image. Identify the room or scene, its state (e.g., messy, under construction, organized), and map the visible maintenance needs to IT tasks.`;
+    parts.push({
+      inlineData: input.imageData
+    });
+  }
+
+  parts.push({ text: prompt });
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: `Act as a senior DevOps engineer and an expert home manager. Map the household chores and activities associated with a "${room}" to equivalent IT engineering tasks (Type B) in a corporate tech environment. Provide creative, witty, and logically sound analogies.`,
+    contents: { parts },
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -19,25 +39,24 @@ export const generateRoomMapping = async (room: string): Promise<MappingResult> 
             items: {
               type: Type.OBJECT,
               properties: {
-                householdTask: { type: Type.STRING, description: "The specific chore or activity in the home room." },
-                itTask: { type: Type.STRING, description: "The corresponding IT engineering or DevOps task." },
+                householdTask: { type: Type.STRING },
+                itTask: { type: Type.STRING },
                 category: { 
                   type: Type.STRING, 
-                  enum: ['Security', 'Maintenance', 'Infrastructure', 'Development', 'Operations'],
-                  description: "The professional domain of the IT task." 
+                  enum: ['Security', 'Maintenance', 'Infrastructure', 'Development', 'Operations']
                 },
-                rationale: { type: Type.STRING, description: "Why these two tasks are equivalent." },
+                rationale: { type: Type.STRING },
                 priority: { 
                   type: Type.STRING, 
-                  enum: ['Low', 'Medium', 'High', 'Critical'],
-                  description: "The business priority level." 
+                  enum: ['Low', 'Medium', 'High', 'Critical']
                 }
               },
               required: ["householdTask", "itTask", "category", "rationale", "priority"]
             }
-          }
+          },
+          story: { type: Type.STRING, description: "A humorous narrative mashing household and IT tasks." }
         },
-        required: ["roomName", "mappings"]
+        required: ["roomName", "mappings", "story"]
       }
     }
   });

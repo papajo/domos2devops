@@ -1,5 +1,7 @@
 {
   "name": "Domos-to-DevOps Mapper",
-  "description": "A high-end conceptual mapping tool that bridges the gap between household management and IT engineering operations. Select a room to see how your everyday chores translate into professional tech tasks.",
-  "requestFramePermissions": []
+  "description": "A high-end conceptual mapping tool that bridges the gap between household management and IT engineering operations. Analyze photos or describe rooms to see how chores translate into DevOps tasks.",
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
