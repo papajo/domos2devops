@@ -6,25 +6,82 @@ import MappingDisplay from './components/MappingDisplay';
 import { generateRoomMapping } from './services/geminiService';
 import { MappingResult } from './types';
 
+const STORAGE_KEY = 'domos_devops_cache';
+const LAST_ROOM_KEY = 'domos_devops_last_room';
+
 const App: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [mapping, setMapping] = useState<MappingResult | null>(null);
+  const [cache, setCache] = useState<Record<string, MappingResult>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleRoomSelect = async (room: string) => {
-    setLoading(true);
+  // Initialize from localStorage
+  useEffect(() => {
+    const savedCache = localStorage.getItem(STORAGE_KEY);
+    const lastRoom = localStorage.getItem(LAST_ROOM_KEY);
+    
+    if (savedCache) {
+      try {
+        const parsedCache = JSON.parse(savedCache);
+        setCache(parsedCache);
+        
+        if (lastRoom && parsedCache[lastRoom]) {
+          setSelectedRoom(lastRoom);
+          setMapping(parsedCache[lastRoom]);
+        }
+      } catch (e) {
+        console.error("Failed to load cache", e);
+      }
+    }
+  }, []);
+
+  // Persist cache and last room
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+  }, [cache]);
+
+  useEffect(() => {
+    if (selectedRoom) {
+      localStorage.setItem(LAST_ROOM_KEY, selectedRoom);
+    }
+  }, [selectedRoom]);
+
+  const handleRoomSelect = async (room: string, forceRefresh = false) => {
     setSelectedRoom(room);
     setError(null);
+
+    // Check cache first if not forcing a refresh
+    if (!forceRefresh && cache[room]) {
+      setMapping(cache[room]);
+      return;
+    }
+
+    setLoading(true);
     try {
       const result = await generateRoomMapping(room);
       setMapping(result);
+      setCache(prev => ({ ...prev, [room]: result }));
     } catch (err) {
       setError("Synchronous link failed. The AI engine encountered a buffer overflow or connection error.");
       console.error(err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = () => {
+    if (selectedRoom) {
+      handleRoomSelect(selectedRoom, true);
+    }
+  };
+
+  const clearCache = () => {
+    setCache({});
+    setMapping(null);
+    setSelectedRoom(null);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LAST_ROOM_KEY);
   };
 
   return (
@@ -48,6 +105,17 @@ const App: React.FC = () => {
           isLoading={loading} 
         />
 
+        <div className="flex justify-end gap-3 mb-6">
+          {Object.keys(cache).length > 0 && (
+            <button 
+              onClick={clearCache}
+              className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-rose-400 transition-colors"
+            >
+              Clear Local Cache
+            </button>
+          )}
+        </div>
+
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
@@ -70,7 +138,11 @@ const App: React.FC = () => {
         )}
 
         {!loading && mapping && (
-          <MappingDisplay data={mapping} />
+          <MappingDisplay 
+            data={mapping} 
+            onRefresh={handleRefresh}
+            isCached={!!cache[mapping.roomName]} 
+          />
         )}
 
         {!loading && !mapping && !error && (

@@ -4,9 +4,11 @@ import { MappingResult } from '../types';
 
 interface MappingDisplayProps {
   data: MappingResult;
+  onRefresh: () => void;
+  isCached: boolean;
 }
 
-const MappingDisplay: React.FC<MappingDisplayProps> = ({ data }) => {
+const MappingDisplay: React.FC<MappingDisplayProps> = ({ data, onRefresh, isCached }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'critical': return 'bg-rose-500/20 text-rose-400 border-rose-500/30';
@@ -30,12 +32,31 @@ const MappingDisplay: React.FC<MappingDisplayProps> = ({ data }) => {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <span className="text-indigo-400">#</span> Deployment Map: {data.roomName}
-        </h2>
-        <span className="text-xs font-mono text-slate-500 uppercase tracking-widest">
-          Schema: Domos-Mapping-v1
-        </span>
+        <div className="flex flex-col">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <span className="text-indigo-400">#</span> Deployment Map: {data.roomName}
+          </h2>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+              Schema: Domos-Mapping-v1
+            </span>
+            {isCached && (
+              <span className="text-[9px] px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded uppercase font-bold tracking-tighter">
+                Disk Cached
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <button 
+          onClick={onRefresh}
+          className="group flex items-center gap-2 px-4 py-2 glass border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 rounded-xl transition-all text-sm font-bold uppercase tracking-tight"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Re-Analyze Sector
+        </button>
       </div>
 
       <div className="glass rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
